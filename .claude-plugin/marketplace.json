@@ -1,0 +1,71 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-mods-diego",
+  "owner": { "name": "Marcelo Diego", "url": "https://github.com/diegocamara89" },
+  "metadata": {
+    "description": "Mods do Claude Code (function hooks) feitos para uso diário: modelo certo para subagentes, revisão com prova, próximos passos, painel ao vivo, lixeira e varredura de segredos antes do push.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "sonnet-por-padrao",
+      "source": "./mods/sonnet-por-padrao",
+      "description": "Subagent and Workflow agents created without an explicit model run on Sonnet instead of inheriting Opus; Opus only when asked on purpose",
+      "version": "1.0.0",
+      "author": { "name": "Marcelo Diego" },
+      "category": "productivity",
+      "keywords": ["subagents", "model", "cost", "workflow"],
+      "license": "MIT"
+    },
+    {
+      "name": "revisor-com-prova",
+      "source": "./mods/revisor-com-prova",
+      "description": "When a reviewer (Codex, agy, council) returns, reminds Claude that a finding without evidence does not count and must be reproduced before fixing",
+      "version": "1.0.0",
+      "author": { "name": "Marcelo Diego" },
+      "category": "quality",
+      "keywords": ["review", "codex", "sycophancy", "false-positives"],
+      "license": "MIT"
+    },
+    {
+      "name": "proximos-passos",
+      "source": "./mods/proximos-passos",
+      "description": "After each answer, Haiku proposes three next requests as buttons above the prompt (keys 1-3)",
+      "version": "1.0.0",
+      "author": { "name": "Marcelo Diego" },
+      "category": "productivity",
+      "keywords": ["suggestions", "next-steps", "ui", "haiku"],
+      "license": "MIT"
+    },
+    {
+      "name": "painel-vivo",
+      "source": "./mods/painel-vivo",
+      "description": "Live pane of what is running: live output, progress, subagents, context and rate limits, session log, plain-language explanation and glossary",
+      "version": "1.0.0",
+      "author": { "name": "Marcelo Diego" },
+      "category": "productivity",
+      "keywords": ["pane", "dashboard", "subagents", "live-output", "ui"],
+      "license": "MIT"
+    },
+    {
+      "name": "lixeira",
+      "source": "./mods/lixeira",
+      "description": "Turns permanent deletes into the system trash and blocks no-way-back commands (git reset --hard, push --force, format) until the user says yes",
+      "version": "1.0.0",
+      "author": { "name": "Marcelo Diego" },
+      "category": "security",
+      "keywords": ["safety", "trash", "recycle-bin", "destructive-commands"],
+      "license": "MIT"
+    },
+    {
+      "name": "varredura-push",
+      "source": "./mods/varredura-push",
+      "description": "Before git push or gh publishing, scans the commits about to leave for keys, tokens and passwords (gitleaks, with fallback rules) and blocks the push on a hit",
+      "version": "1.0.0",
+      "author": { "name": "Marcelo Diego" },
+      "category": "security",
+      "keywords": ["secrets", "gitleaks", "git", "push"],
+      "license": "MIT"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "varredura-push",
+  "version": "1.0.0",
+  "description": "Antes de git push ou publicação pelo gh, procura chave, token e senha nos commits que vão subir (gitleaks, com regras de reserva) e barra o envio se achar",
+  "author": {
+    "name": "Marcelo Diego",
+    "url": "https://github.com/diegocamara89"
+  },
+  "license": "MIT"
+}

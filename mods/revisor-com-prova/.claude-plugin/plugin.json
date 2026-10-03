@@ -1,0 +1,10 @@
+{
+  "name": "revisor-com-prova",
+  "version": "1.0.0",
+  "description": "Quando volta o resultado de um revisor (Codex, agy, council), lembra o Claude de que achado sem prova não conta e de reproduzir antes de corrigir",
+  "author": {
+    "name": "Marcelo Diego",
+    "url": "https://github.com/diegocamara89"
+  },
+  "license": "MIT"
+}

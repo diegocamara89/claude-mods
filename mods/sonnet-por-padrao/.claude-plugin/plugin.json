@@ -1,0 +1,10 @@
+{
+  "name": "sonnet-por-padrao",
+  "version": "1.0.0",
+  "description": "Subagente e agente de script (Workflow) criados sem modelo escrito rodam no Sonnet em vez de herdar o Opus; Opus só quando pedido de propósito",
+  "author": {
+    "name": "Marcelo Diego",
+    "url": "https://github.com/diegocamara89"
+  },
+  "license": "MIT"
+}

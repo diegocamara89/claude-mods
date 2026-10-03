@@ -1,0 +1,11 @@
+{
+  "name": "painel-vivo",
+  "version": "1.0.0",
+  "description": "Painel com o que está rodando: saída ao vivo, porcentagem, subagentes, contexto e cota, registro da sessão, explicação para leigo e glossário",
+  "types": "./types/index.d.ts",
+  "author": {
+    "name": "Marcelo Diego",
+    "url": "https://github.com/diegocamara89"
+  },
+  "license": "MIT"
+}

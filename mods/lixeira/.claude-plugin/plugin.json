@@ -1,0 +1,10 @@
+{
+  "name": "lixeira",
+  "version": "1.0.0",
+  "description": "Troca o apagar de vez pela lixeira do sistema e barra comandos sem volta (git reset --hard, push --force, formatar) até o sim do usuário",
+  "author": {
+    "name": "Marcelo Diego",
+    "url": "https://github.com/diegocamara89"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "proximos-passos",
+  "version": "1.0.0",
+  "description": "Depois de cada resposta, o Haiku propõe três próximos pedidos em botões acima da caixa de mensagem (teclas 1-3)",
+  "types": "./types/index.d.ts",
+  "author": {
+    "name": "Marcelo Diego",
+    "url": "https://github.com/diegocamara89"
+  },
+  "license": "MIT"
+}
