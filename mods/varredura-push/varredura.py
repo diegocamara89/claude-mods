@@ -81,7 +81,7 @@ def main():
     rc, log, err = git(pasta, "log", "-p", "--no-color", "--format=commit %h", *faixa)
     if rc != 0:
         print(f"varredura: não consegui ler o repositório em {os.path.abspath(pasta)}: {err.strip()}")
-        print("Push barrado. Se o usuário disser que pode subir sem conferir, repita com VARREDURA_OK=1 na frente.")
+        print("Push barrado. Se o usuário disser que pode subir sem conferir, repita com VARREDURA_OK=1 na frente (Bash) ou $env:VARREDURA_OK=1; na frente (PowerShell).")
         return 1
 
     achados = gitleaks(pasta, faixa)
@@ -119,7 +119,7 @@ def main():
     if len(achados) > 15:
         print(f"… e mais {len(achados) - 15}.")
     print("Mostre os achados ao usuário. Se forem falso positivo e ele disser que pode subir, "
-          "repita o comando com VARREDURA_OK=1 na frente. Nunca use isso por conta própria.")
+          "repita o comando com VARREDURA_OK=1 na frente (Bash) ou $env:VARREDURA_OK=1; na frente (PowerShell). Nunca use isso por conta própria.")
     return 1
 
 

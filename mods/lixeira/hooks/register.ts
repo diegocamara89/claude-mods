@@ -17,7 +17,11 @@ const SEM_VOLTA: [RegExp, string][] = [
   [/\bgit\b[^;&|\n]*\bclean\b[^;&|\n]*\s-[a-z]*f/, 'git clean -f'],
   [/\b(shred|sdelete)\b|\bcipher\s+\/w/i, 'apagar sem recuperação'],
   [/\bmkfs\b|\bdd\b[^;\n]*\bof=/, 'sobrescrever disco'],
+  [/\bshutdown(\.exe)?\s+[/-][srgp]\b|\b(Restart|Stop)-Computer\b/i, 'desligar ou reiniciar o computador'],
+  [/\bFormat-Volume\b|\bClear-Disk\b|\bInitialize-Disk\b/i, 'formatar ou zerar disco'],
 ]
+const LIBERAR = 'repita com `$env:LIXEIRA_OK=1;` na frente (PowerShell) ou `LIXEIRA_OK=1 ` na frente (Bash), ' +
+  'só com o sim do usuário nesta conversa. Nunca por conta própria.'
 
 type Palavra = { w: string } | { op: string }
 
@@ -40,14 +44,15 @@ function palavras(linha: string): Palavra[] {
   return out
 }
 
-function comandos(linha: string): string[][] {
-  const out: string[][] = []
-  let atual: string[] = []
+// Cada comando com o operador que veio antes dele ('' no começo): a esteira (|) passa o alvo adiante.
+function comandos(linha: string): { op: string; ws: string[] }[] {
+  const out: { op: string; ws: string[] }[] = []
+  let atual: string[] = [], op = ''
   for (const p of palavras(linha)) {
-    if ('op' in p) { if (atual.length) out.push(atual); atual = [] }
+    if ('op' in p) { if (atual.length) out.push({ op, ws: atual }); atual = []; op = p.op }
     else atual.push(p.w)
   }
-  if (atual.length) out.push(atual)
+  if (atual.length) out.push({ op, ws: atual })
   return out
 }
 
@@ -55,18 +60,23 @@ const PULA = new Set(['sudo', 'env', 'command', 'exec', 'nohup', 'time', 'xargs'
 function programa(ws: string[]) {
   let i = 0
   while (i < ws.length && (PULA.has(ws[i]) || /^[A-Za-z_]\w*=/.test(ws[i]))) i++
-  return { nome: (ws[i] ?? '').split(/[\\/]/).pop()!.toLowerCase(), args: ws.slice(i + 1) }
+  return { nome: (ws[i] ?? '').split(/[\\/]/).pop()!.toLowerCase().replace(/\.exe$/, ''), args: ws.slice(i + 1) }
 }
 
 // Alvos de cada comando que apaga, nas duas sintaxes (Bash e PowerShell/cmd).
-function alvosQueApagam(cmd: string): string[] {
+export function alvosQueApagam(cmd: string): string[] {
   const alvos: string[] = []
-  for (const ws of comandos(cmd)) {
+  const semFlagDe = (args: string[]) => args.filter(a => !/^(-|\/[a-z]$)/i.test(a))
+  let anterior: string[] = []
+  for (const { op, ws } of comandos(cmd)) {
     const { nome, args } = programa(ws)
-    const semFlag = args.filter(a => !/^(-|\/[a-z]$)/i.test(a) && !/^-(Recurse|Force|Path|LiteralPath|Confirm:\$false)$/i.test(a))
-    if (['rm', 'unlink'].includes(nome)) alvos.push(...semFlag)
-    else if (['remove-item', 'ri', 'del', 'erase', 'rd', 'rmdir'].includes(nome)) {
+    let semFlag = semFlagDe(args)
+    const ant = anterior
+    anterior = ws
+    if (['rm', 'unlink', 'remove-item', 'ri', 'del', 'erase', 'rd', 'rmdir'].includes(nome)) {
       if (nome === 'rmdir' && !args.some(a => /^(\/s|-r|-recurse)$/i.test(a))) continue // rmdir simples só remove pasta vazia
+      // Esteira do PowerShell (gci X | Remove-Item): o alvo é o caminho do comando anterior.
+      if (!semFlag.length && op === '|') semFlag = semFlagDe(programa(ant).args).length ? semFlagDe(programa(ant).args) : ['.']
       alvos.push(...semFlag)
     } else if (nome === 'find' && args.includes('-delete')) alvos.push(args[0] ?? '.')
     else if (['powershell', 'pwsh', 'cmd', 'bash', 'sh'].includes(nome)) {
@@ -98,8 +108,7 @@ export const register: Register = on => {
       $.ui.toast(`lixeira: barrado (${semVolta.join(', ')})`)
       return {
         deny: `lixeira barrou um comando sem volta: ${semVolta.join(', ')}.\n` +
-          'Explique ao usuário o que o comando faria e peça o sim dele. Com o sim explícito nesta conversa, ' +
-          'repita com LIXEIRA_OK=1 na frente. Nunca por conta própria.',
+          `Explique ao usuário o que o comando faria e peça o sim dele. Com o sim explícito, ${LIBERAR}`,
       }
     }
 
@@ -116,8 +125,7 @@ export const register: Register = on => {
     return {
       deny: `lixeira: este comando apagaria de vez ${perigosos.slice(0, 5).join(', ')}${perigosos.length > 5 ? '…' : ''}.\n` +
         como +
-        'Coringa (*) ou variável no caminho: troque pelo caminho real antes. Se o usuário pediu apagar de vez, ' +
-        'repita com LIXEIRA_OK=1 só com o sim dele.',
+        `Coringa (*) ou variável no caminho: troque pelo caminho real antes. Se o usuário pediu apagar de vez, ${LIBERAR}`,
     }
   })
 }
