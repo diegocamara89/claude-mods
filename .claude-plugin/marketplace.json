@@ -40,8 +40,8 @@
     {
       "name": "painel-vivo",
       "source": "./mods/painel-vivo",
-      "description": "Live pane of what is running: live output, progress, subagents, context and rate limits, session log, plain-language explanation and glossary",
-      "version": "1.0.0",
+      "description": "Glanceable live pane: pending items, warnings and a worker tree (subagents, Workflow agents, commands, agy, Codex) with model, tokens and current step; other busy sessions; rate limits",
+      "version": "2.0.0",
       "author": { "name": "Marcelo Diego" },
       "category": "productivity",
       "keywords": ["pane", "dashboard", "subagents", "live-output", "ui"],
