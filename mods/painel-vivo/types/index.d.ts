@@ -23,7 +23,8 @@ export type Trabalhador = {
   acoes: Acao[]              // últimas 60
   agentId?: string           // subagente/agente-wf: o agentId do motor
   modelo?: string
-  tokensNovos?: number       // entrada + saída + criação de cache
+  contexto?: number          // tamanho do contexto no último pedido: o "tokens" que o app mostra
+  tokensNovos?: number       // entrada + saída + criação de cache (acumulado, só no hover)
   tokensCache?: number       // releitura de cache (barata)
   pct?: number               // porcentagem real informada pela saída do comando
   passos?: number            // agy: passos dados

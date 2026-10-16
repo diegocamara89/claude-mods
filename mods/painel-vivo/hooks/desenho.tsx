@@ -243,7 +243,7 @@ export function desenharPainel(el: any, e: any, m: Modelo, acoes: Acoes): any {
         </Box>
         <Box position="absolute" top={2} left={4} display="none" hover={{ display: 'flex' }} flexDirection="column" borderStyle="round" borderColor={P.borda} backgroundColor={P.cartao} paddingX={1}>
           {t.modelo ? <Text color={P.secundario}>{`modelo ${modeloCurto(t.modelo)}`}</Text> : null}
-          {tokens ? <Text color={P.secundario}>{`tokens ${mil(t.tokensNovos ?? 0)} novos · ${mil(t.tokensCache ?? 0)} em cache`}</Text> : null}
+          {tokens ? <Text color={P.secundario}>{`contexto ${mil(t.contexto ?? 0)} · processado no total ${mil((t.tokensNovos ?? 0) + (t.tokensCache ?? 0))} (${mil(t.tokensCache ?? 0)} relidos do cache)`}</Text> : null}
           <Text color={P.secundario}>{`tempo ${duracao}`}</Text>
           {t.rotulo ? <Text color={P.apagado} wrap="truncate-end">{limpo(t.rotulo)}</Text> : null}
         </Box>

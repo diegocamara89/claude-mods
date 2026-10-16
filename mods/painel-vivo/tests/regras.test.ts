@@ -490,10 +490,10 @@ test('modeloCurto: nomes do Claude, do Gemini e outros', () => {
 })
 
 test('quemGasta: Claude com modelo e tokens; Codex sem tokens; workflow soma os agentes; comando nada', () => {
-  const ag = { id: 'ag:1', tipo: 'agente-wf', pai: 'wf', rotulo: 'x', agora: '', inicio: 0, situacao: 'rodando', ultimoSinal: 0, acoes: [], modelo: 'claude-sonnet-5-5', tokensNovos: 1_000, tokensCache: 70_000 } as Trabalhador
+  const ag = { id: 'ag:1', tipo: 'agente-wf', pai: 'wf', rotulo: 'x', agora: '', inicio: 0, situacao: 'rodando', ultimoSinal: 0, acoes: [], modelo: 'claude-sonnet-5-5', tokensNovos: 1_000, tokensCache: 900_000, contexto: 71_000 } as Trabalhador
   expect(quemGasta(ag)).toBe('Sonnet 5.5 · 71 mil tokens')
   expect(quemGasta({ ...ag, tipo: 'codex', modelo: undefined })).toBe('modelo padrão')
-  expect(quemGasta({ ...ag, tipo: 'agy', modelo: 'Gemini 3.8 Flash (High)', tokensNovos: 40_101, tokensCache: 0 })).toBe('Gemini 3.8 Flash · 40 mil tokens')
+  expect(quemGasta({ ...ag, tipo: 'agy', modelo: 'Gemini 3.8 Flash (High)', tokensNovos: 40_101, tokensCache: 0, contexto: 40_101 })).toBe('Gemini 3.8 Flash · 40 mil tokens')
   expect(quemGasta({ ...ag, id: 'wf', tipo: 'workflow', modelo: undefined }, [ag, { ...ag, id: 'ag:2' }])).toBe('142 mil tokens')
   expect(quemGasta({ ...ag, tipo: 'comando' })).toBe('')
 })
@@ -515,4 +515,11 @@ test('cota: dispensado aos 80% não volta aos 88%, volta aos 90%, e volta na jan
   expect(aviso(88, janela1, visto80)).toEqual([])
   expect(aviso(91, janela1, visto80).map(a => a.titulo)).toEqual(['Cota de 5h em 91% · renova às 19:20'])
   expect(aviso(81, janela2, visto80).length).toBe(1)
+})
+
+// O número é o do app: tamanho do contexto no último pedido, não a soma de tudo que o agente releu do cache
+// (medido em 15/10 num workflow real: 103,9 mil no app e 1,0 mi na soma).
+test('quemGasta: mostra o contexto, ignora a releitura acumulada do cache', () => {
+  const ag = { id: 'ag:1', tipo: 'agente-wf', pai: 'wf', rotulo: 'x', agora: '', inicio: 0, situacao: 'rodando', ultimoSinal: 0, acoes: [], modelo: 'claude-sonnet-5-5', tokensNovos: 3_465, tokensCache: 939_528, contexto: 103_900 } as Trabalhador
+  expect(quemGasta(ag)).toBe('Sonnet 5.5 · 104 mil tokens')
 })

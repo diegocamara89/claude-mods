@@ -75,7 +75,8 @@ export function modeloCurto(m: string): string {
 
 /** Quem trabalha e quanto gastou, para a 2ª linha da raia: "Sonnet 5.5 · 71 mil tokens". Vazio se não há o que dizer. */
 export function quemGasta(t: Trabalhador, filhos: Trabalhador[] = []): string {
-  const tok = (x: Trabalhador) => (x.tokensNovos ?? 0) + (x.tokensCache ?? 0)
+  // O mesmo número do app: tamanho do contexto do agente no último pedido (não a soma de tudo que ele releu).
+  const tok = (x: Trabalhador) => x.contexto ?? 0
   if (t.tipo === 'workflow') {
     const soma = filhos.filter(f => f.tipo === 'agente-wf').reduce((s, f) => s + tok(f), 0)
     return soma ? `${mil(soma)} tokens` : ''

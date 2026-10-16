@@ -41,7 +41,7 @@
       "name": "painel-vivo",
       "source": "./mods/painel-vivo",
       "description": "Glanceable live pane: pending items, warnings and a worker tree (subagents, Workflow agents, commands, agy, Codex) with model, tokens and current step; other busy sessions; rate limits",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "author": { "name": "Marcelo Diego" },
       "category": "productivity",
       "keywords": ["pane", "dashboard", "subagents", "live-output", "ui"],

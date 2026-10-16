@@ -1,6 +1,6 @@
 {
   "name": "painel-vivo",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Painel ao vivo do que o Claude e cada ajudante fazem: subagentes, agentes de Workflow, comandos, agy e Codex em árvore, com modelo, tokens, pendências, avisos, outras sessões e uso",
   "types": "./types/index.d.ts",
   "author": {

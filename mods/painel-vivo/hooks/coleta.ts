@@ -31,6 +31,7 @@ type Ts = Record<string, Trabalhador>
 const PLANO = new Set(['TodoWrite', 'TaskCreate', 'TaskUpdate'])
 const INTERNAS = new Set(['ToolSearch', 'StructuredOutput', 'SubagentHandback', 'TaskGet', 'TaskList', 'TaskOutput'])
 const COMANDOS = new Set(['Bash', 'PowerShell'])
+const CHAMA_AGY = /\bagy\b|call-agy|llm-council|council\.py/i
 const RE_AGY = /python[^;&|]*agy\.py|(^|[;&|(]\s*)agy\s/ // casa `python run_agy.py` e `python agy.py`
 const RE_CODEX = /codex-companion/
 const MESA = 5_000 // comando de agente vira trabalhador a partir daqui
@@ -42,7 +43,7 @@ type EmVoo = { id: string; tool: string; agentId?: string; dono: string; inicio:
 const emVoo = new Map<string, EmVoo>() // chamadas em andamento, por tool_use_id
 const emPedido = new Set<string>() // agentId ('' = principal) com pedido ao modelo em curso: conta como sinal de vida
 const fazendo = new Map<string, string>() // agentId → 'pensando' | 'escrevendo a resposta'
-const gasto = new Map<string, { novos: number; cache: number }>() // tokens ainda não gravados, por agentId
+const gasto = new Map<string, { novos: number; cache: number; ctx: number }>() // tokens ainda não gravados, por agentId
 const modelos = new Map<string, string>() // agentId → modelo visto no turn.step
 const tarefas = new Map<string, Map<string, { status: string; atual?: string }>>() // TaskCreate/TaskUpdate por agente
 const donos = new Map<string, string>() // agentId → id do trabalhador (também gravado em Trabalhador.agentId)
@@ -264,7 +265,8 @@ async function aoChamar($: any, e: any, next: any) {
       const dir = await pastaRuns($)
       const agyDir = `${dir}/${id}.agy`
       extra.agyDir = agyDir
-      if (ferramenta === 'PowerShell') entrada = { ...e, command: envolverPowerShell(e.command, agyDir) }
+      // PowerShell só ganha a variável quando chama o agy: chamada reescrita fica sem veredito no modo automático.
+      if (ferramenta === 'PowerShell') { if (CHAMA_AGY.test(e.command)) entrada = { ...e, command: envolverPowerShell(e.command, agyDir) } }
       else if (fundo) entrada = { ...e, command: envolverBash(e.command, agyDir) } // a saída vai ao arquivo do motor
       else {
         extra.log = `${dir}/${id}.log`
@@ -491,9 +493,11 @@ function trecho(agentId: string | undefined, c: any): void {
   if (c.kind === 'text') fazendo.set(k, 'escrevendo a resposta')
   else if (c.kind === 'thinking' || c.kind === 'tool') fazendo.set(k, 'pensando')
   else if (c.kind === 'stop' && c.usage) {
-    const g = gasto.get(k) ?? { novos: 0, cache: 0 }
+    const g = gasto.get(k) ?? { novos: 0, cache: 0, ctx: 0 }
     g.novos += novosDe(c.usage)
     g.cache += c.usage.cache_read_input_tokens ?? 0
+    // Tamanho do contexto neste pedido: é o número que o app mostra ("tokens" do agente), não a soma dos pedidos.
+    g.ctx = (c.usage.input_tokens ?? 0) + (c.usage.cache_read_input_tokens ?? 0) + (c.usage.cache_creation_input_tokens ?? 0)
     gasto.set(k, g)
   }
 }
@@ -762,7 +766,7 @@ async function girar($: any): Promise<void> {
     }
     if (t.agyDir) {
       const g = await lerAgy($, t.agyDir)
-      if (g) mexe(t.id, { tipo: 'agy', passos: g.passos, agora: traduzirPassoAgy(g.agora), ...(g.modelo ? { modelo: g.modelo } : {}), ...(g.tokens ? { tokensNovos: g.tokens } : {}), ultimoSinal: g.mtime })
+      if (g) mexe(t.id, { tipo: 'agy', passos: g.passos, agora: traduzirPassoAgy(g.agora), ...(g.modelo ? { modelo: g.modelo } : {}), ...(g.tokens ? { tokensNovos: g.tokens, contexto: g.tokens } : {}), ultimoSinal: g.mtime })
     }
   }
 
@@ -798,7 +802,7 @@ async function girar($: any): Promise<void> {
         const id = donoEm(out, ag)
         const t = id ? out[id] : undefined
         const g = tok.get(ag)!
-        if (t) out[t.id] = { ...t, tokensNovos: (t.tokensNovos ?? 0) + g.novos, tokensCache: (t.tokensCache ?? 0) + g.cache }
+        if (t) out[t.id] = { ...t, tokensNovos: (t.tokensNovos ?? 0) + g.novos, tokensCache: (t.tokensCache ?? 0) + g.cache, ...(g.ctx ? { contexto: g.ctx } : {}) }
       }
       return poda(out)
     })
