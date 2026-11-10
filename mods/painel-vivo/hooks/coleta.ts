@@ -663,8 +663,19 @@ async function anotarTitulo($: any, titulo: unknown): Promise<void> {
   if (p.titulo !== t) await update($, principal, x => ({ ...x, titulo: t }))
 }
 
+/** O caminho da transcrição vinha só dos eventos clássicos, que o plugin embutido cc-plugin-sec-default (app 2.1.303)
+ * passou a interceptar. Calculado aqui: <config>/projects/<cwd com todo não-alfanumérico trocado por ->/<id>.jsonl. */
+async function acharTranscricao($: any): Promise<void> {
+  if (arquivoSessao) return
+  const cfg = (await $.env.get('CLAUDE_CONFIG_DIR')) || `${await $.env.get('USERPROFILE')}/.claude`
+  const pasta = String(await $.session.cwd()).replace(/[^A-Za-z0-9]/g, '-')
+  const f = `${String(cfg).replace(/\\/g, '/')}/projects/${pasta}/${idSessao}.jsonl`
+  if (await $.fs.stat(f).catch(() => undefined)) arquivoSessao = f
+}
+
 async function iniciar($: any): Promise<void> {
   idSessao = await $.session.id()
+  await acharTranscricao($).catch(nada)
   const salvo = await $.store.get('glossario')
   if (Array.isArray(salvo)) await update($, glossario, () => salvo)
   const u = await $.session.usage().catch(() => undefined)

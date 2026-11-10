@@ -16,7 +16,7 @@ const SEM_VOLTA: [RegExp, string][] = [
   [/\bgit\b[^;&|\n]*\bpush\b[^;&|\n]*(--force(?!-with-lease)\b|\s-f\b)/, 'git push --force'],
   [/\bgit\b[^;&|\n]*\bclean\b[^;&|\n]*\s-[a-z]*f/, 'git clean -f'],
   [/\b(shred|sdelete)\b|\bcipher\s+\/w/i, 'apagar sem recuperação'],
-  [/\bmkfs\b|\bdd\b[^;\n]*\bof=/, 'sobrescrever disco'],
+  [/\bmkfs\b|\bdd\b[^;\n]*\bof=(\/dev\/|\\\\\.\\)/, 'sobrescrever disco'],
   [/\bshutdown(\.exe)?\s+[/-][srgp]\b|\b(Restart|Stop)-Computer\b/i, 'desligar ou reiniciar o computador'],
   [/\bFormat-Volume\b|\bClear-Disk\b|\bInitialize-Disk\b/i, 'formatar ou zerar disco'],
 ]
@@ -56,6 +56,36 @@ function comandos(linha: string): { op: string; ws: string[] }[] {
   return out
 }
 
+// Texto entre aspas é dado (padrão de grep, mensagem de commit, comando remoto), salvo quando é o comando
+// de uma casca local (-c, -Command, /c).
+export function semAspas(linha: string): string {
+  let out = ''
+  for (let i = 0; i < linha.length; i++) {
+    const c = linha[i]
+    if (c !== "'" && c !== '"') { out += c; continue }
+    const fim = linha.indexOf(c, i + 1)
+    const dentro = linha.slice(i + 1, fim === -1 ? linha.length : fim)
+    out += /(^|\s)(-c|-command|\/c)\s*$/i.test(out) ? ` ${semAspas(dentro)} ` : ' '
+    i = fim === -1 ? linha.length : fim
+  }
+  return out
+}
+
+// Variáveis atribuídas no próprio comando (Bash S=..., PowerShell $s = ...): o alvo é o caminho que guardam.
+function variaveis(cmd: string): Map<string, string> {
+  const v = new Map<string, string>()
+  for (const { ws } of comandos(cmd)) ws.forEach((w, i) => {
+    const b = /^\$?([A-Za-z_]\w*)=(.+)$/.exec(w)
+    if (b) v.set(b[1].toLowerCase(), b[2])
+    else if (/^\$[A-Za-z_]\w*$/.test(w) && ws[i + 1] === '=' && ws[i + 2] !== undefined) v.set(w.slice(1).toLowerCase(), ws[i + 2])
+  })
+  return v
+}
+const expande = (t: string, v: Map<string, string>) => {
+  for (let k = 0; k < 3; k++) t = t.replace(/\$\{?([A-Za-z_]\w*)\}?/g, (m, n) => v.get(n.toLowerCase()) ?? m)
+  return t
+}
+
 const PULA = new Set(['sudo', 'env', 'command', 'exec', 'nohup', 'time', 'xargs'])
 function programa(ws: string[]) {
   let i = 0
@@ -66,7 +96,11 @@ function programa(ws: string[]) {
 // Alvos de cada comando que apaga, nas duas sintaxes (Bash e PowerShell/cmd).
 export function alvosQueApagam(cmd: string): string[] {
   const alvos: string[] = []
-  const semFlagDe = (args: string[]) => args.filter(a => !/^(-|\/[a-z]$)/i.test(a))
+  // Fora: flags, o valor de flag que leva valor (-ErrorAction X), redirecionamento (2>/dev/null, > arq).
+  const COM_VALOR = /^-(erroraction|ea|warningaction|wa|informationaction|filter|include|exclude|depth)$/i
+  const semFlagDe = (args: string[]) => args
+    .filter((a, i) => !/^(-|\/[a-z]$|\d*>)/i.test(a) && !COM_VALOR.test(args[i - 1] ?? '') && !/^\d*>+$/.test(args[i - 1] ?? ''))
+    .flatMap(a => a.split(',')).filter(Boolean)
   let anterior: string[] = []
   for (const { op, ws } of comandos(cmd)) {
     const { nome, args } = programa(ws)
@@ -103,7 +137,8 @@ export const register: Register = on => {
     const cmd = String(a.command ?? '').replace(/<<-?\s*['"]?(\w+)['"]?[^\n]*\n[\s\S]*?\n\s*\1\s*(?=\n|$)/g, '')
     if (LIBERA.test(cmd)) return next(e)
 
-    const semVolta = SEM_VOLTA.filter(([re]) => re.test(cmd)).map(([, nome]) => nome)
+    const fora = semAspas(cmd)
+    const semVolta = SEM_VOLTA.filter(([re]) => re.test(fora)).map(([, nome]) => nome)
     if (semVolta.length) {
       $.ui.toast(`lixeira: barrado (${semVolta.join(', ')})`)
       return {
@@ -112,9 +147,10 @@ export const register: Register = on => {
       }
     }
 
-    const perigosos = alvosQueApagam(cmd).filter(t => t && !SEGURO.test(t) && !criados.has(norm(t)))
+    const v = variaveis(cmd)
+    const perigosos = alvosQueApagam(cmd).map(t => expande(t, v)).filter(t => t && !SEGURO.test(t) && !criados.has(norm(t)))
     if (!perigosos.length) return next(e)
-    $.ui.toast('lixeira: troquei o apagar pela lixeira')
+    $.ui.toast('lixeira: troquei o apagar pela Lixeira')
     const lista = perigosos.map(t => `"${t}"`).join(' ')
     // Windows: script que vem junto com o mod. macOS e Linux: o comando de lixeira do sistema.
     const windows = (await $.env.get('OS')) === 'Windows_NT'

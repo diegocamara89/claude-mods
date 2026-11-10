@@ -1,0 +1,10 @@
+{
+  "name": "trava-portugues",
+  "version": "1.0.0",
+  "description": "Lembra o Claude de responder em português depois de ler texto em inglês e pede reescrita quando a resposta sai em inglês",
+  "author": {
+    "name": "Marcelo Diego",
+    "url": "https://github.com/diegocamara89"
+  },
+  "license": "MIT"
+}

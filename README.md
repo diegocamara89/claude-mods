@@ -8,7 +8,7 @@ Mods do Claude Code (function hooks) que uso todo dia. · Claude Code mods (func
 
 ## Português
 
-Seis mods, cada um resolvendo um problema que apareceu no uso real. A interface e as mensagens dos mods estão em português.
+Sete mods, cada um resolvendo um problema que apareceu no uso real. A interface e as mensagens dos mods estão em português.
 
 ### Instalar
 
@@ -31,6 +31,7 @@ Troque `sonnet-por-padrao` pelo nome de qualquer mod da tabela. Para testar sem 
 | [painel-vivo](mods/painel-vivo) | Painel ao vivo, para ler de relance: uma manchete com Pendências, Atividade e Progresso; fila do que pede você (permissão, pergunta, travado) e avisos; trabalhadores em árvore (subagentes, agentes de Workflow, comandos, agy e Codex aninhados em quem os chamou), cada um com tempo, modelo, tokens e o que faz agora; outras sessões em andamento numa linha; cotas de 5 h e 7 dias. "Explicar" traduz um trabalho para leigo e alimenta um glossário (`/glossario`). | Envolve cada comando Bash e PowerShell para copiar a saída num arquivo local (`tee`, em `LOCALAPPDATA` ou `TMPDIR`) e marcar onde o agy grava os passos (`AGY_EVENTS_DIR`); apaga esses arquivos depois de 1 dia; se o [rtk](https://github.com/rtk-ai/rtk) estiver instalado, passa o comando por ele antes; guarda um resumo de cada sessão no armazenamento do plugin para as outras sessões verem; lê o título da conversa no transcript com um script Python curto; chama o Haiku só no "Explicar". |
 | [lixeira](mods/lixeira) | Nega o apagar de vez e devolve ao Claude o comando que manda para a lixeira do sistema; barra comandos sem volta (`git reset --hard`, `push --force`, formatar, esvaziar lixeira, desligar ou reiniciar o computador, `Format-Volume`, `Clear-Disk`) até o usuário dizer sim (`LIXEIRA_OK=1` no Bash, `$env:LIXEIRA_OK=1;` no PowerShell). Também pega o apagar pela esteira do PowerShell (`gci pasta \| Remove-Item`). Temporários, caches e arquivos criados na conversa ficam livres. | Lê o comando e nega quando precisa. No Windows usa o `lixeira.ps1` que vem junto; no macOS e no Linux sugere `trash` ou `gio trash`. |
 | [varredura-push](mods/varredura-push) | Antes de `git push` e de publicação pelo `gh` (no Bash e no PowerShell), confere os commits que vão subir procurando chave, token e senha. Barra o envio se achar. Liberação pontual com `VARREDURA_OK=1`. | Põe `python varredura.py &&` antes do push. Usa o [gitleaks](https://github.com/gitleaks/gitleaks) se estiver no PATH; sem ele, regras de reserva. |
+| [trava-portugues](mods/trava-portugues) | Depois de o Claude ler um texto longo em inglês (doc, erro, log), lembra-o de responder em português; se a resposta final sair em inglês, pede a reescrita inteira em português, uma vez só. Fica quieto quando você pede inglês. | Lê o resultado das ferramentas e a resposta final; conta palavras de ligação (não chama modelo); manda uma mensagem de reescrita quando precisa. |
 
 ### Por que o revisor-com-prova
 
@@ -53,7 +54,7 @@ Licença: [MIT](LICENSE).
 
 ## English
 
-Six mods, each fixing a problem that came up in real use. The mods' UI and messages are in Portuguese.
+Seven mods, each fixing a problem that came up in real use. The mods' UI and messages are in Portuguese.
 
 ### Install
 
@@ -76,6 +77,7 @@ Replace `sonnet-por-padrao` with any mod name from the table. To try one without
 | [painel-vivo](mods/painel-vivo) ("live pane") | Glanceable live pane: a headline with Pending, Activity and Progress; a queue of what needs you (permission, question, stuck worker) and warnings; workers as a tree (subagents, Workflow agents, commands, agy and Codex nested under whoever called them), each with elapsed time, model, tokens and what it is doing now; other busy sessions in one line; 5-hour and 7-day rate limits. "Explicar" explains a job in plain language and feeds a glossary (`/glossario`). | Wraps each Bash and PowerShell command to copy its output to a local file (`tee`, in `LOCALAPPDATA` or `TMPDIR`) and to tell agy where to write its steps (`AGY_EVENTS_DIR`); deletes those files after 1 day; if [rtk](https://github.com/rtk-ai/rtk) is installed, runs the command through it first; keeps a per-session summary in the plugin store so other sessions can see it; reads the conversation title from the transcript with a short Python script; calls Haiku only on "Explicar". |
 | [lixeira](mods/lixeira) ("trash") | Denies permanent deletes and hands Claude the command that moves the files to the system trash; blocks no-way-back commands (`git reset --hard`, `push --force`, format, emptying the trash, shutting down or restarting the computer, `Format-Volume`, `Clear-Disk`) until the user says yes (`LIXEIRA_OK=1` in Bash, `$env:LIXEIRA_OK=1;` in PowerShell). It also catches deletes through a PowerShell pipeline (`gci folder \| Remove-Item`). Temp folders, caches and files written in the session stay free. | Reads the command and denies when needed. On Windows it uses the bundled `lixeira.ps1`; on macOS and Linux it suggests `trash` or `gio trash`. |
 | [varredura-push](mods/varredura-push) ("push scan") | Before `git push` and `gh` publishing (in Bash and PowerShell), scans the commits about to leave for keys, tokens and passwords, and blocks the push on a hit. One-off override with `VARREDURA_OK=1`. | Prepends `python varredura.py &&` to the push. Uses [gitleaks](https://github.com/gitleaks/gitleaks) when on PATH; fallback rules otherwise. |
+| [trava-portugues](mods/trava-portugues) ("Portuguese lock") | After Claude reads a long English text (docs, error, log), reminds it to answer in Brazilian Portuguese; if the final answer still comes out in English, asks once for a full rewrite in Portuguese. Stays quiet when you ask for English. | Reads tool results and the final answer; counts function words (no model call); submits a rewrite message when needed. |
 
 ### Why revisor-com-prova
 

@@ -403,7 +403,7 @@ test('nomes humanos por tipo', () => {
   expect(n({ tipo: 'agy', modelo: 'Claude Sonnet 4.6 (Thinking)' })).toBe('Assistente Claude')
   expect(n({ tipo: 'codex', rotulo: 'codex-companion' })).toBe('Revisor Codex')
   expect(n({ tipo: 'workflow', rotulo: 'painel-vivo-v2-implementa' })).toBe('Painel vivo v2 implementa')
-  expect(n({ tipo: 'workflow', rotulo: 'C:/projetos/meu_fluxo.js' })).toBe('Meu fluxo') // título que veio como caminho
+  expect(n({ tipo: 'workflow', rotulo: 'C:/projetos/Dev/meu_fluxo.js' })).toBe('Meu fluxo') // título que veio como caminho
   expect(n({ tipo: 'workflow', rotulo: 'Conserto da plataforma 3D' })).toBe('Conserto da plataforma 3D')
   expect(n({ tipo: 'pergunta', rotulo: 'Qual material?' })).toBe('Pergunta ao usuário')
   expect(n({ tipo: 'comando', rotulo: 'x'.repeat(100) }).length).toBeLessThanOrEqual(56)
